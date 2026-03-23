@@ -192,29 +192,36 @@ print("\nTabelas exportadas para 'tabelas_artigo.xlsx'.")
 # ============================================================================
 
 def plot_curvas_etarias():
-    """Gráfico de linhas (curvas etárias) para anos selecionados."""
-    plt.figure(figsize=(12, 6))
-    anos_plot = [2000, 2010, 2025]
-    cores_m = ['#1f77b4', '#aec7e8', '#1f77b4']
-    cores_f = ['#d62728', '#ff9896', '#d62728']
-    estilos_m = ['-', '--', ':']
-    estilos_f = ['-', '--', ':']
-    for i, ano in enumerate(anos_plot):
+    """Gráfico de linhas (curvas etárias) para todos os anos disponíveis (2000–2025)."""
+    plt.figure(figsize=(14, 8))
+    cmap_m = plt.cm.Blues   # azul para masculino
+    cmap_f = plt.cm.Reds    # vermelho para feminino
+
+    for i, ano in enumerate(anos_idade):
         idx = anos_idade.index(ano)
         m_vals = [masc_perc[j][idx] for j in range(len(faixas_etarias))]
         f_vals = [fem_perc[j][idx] for j in range(len(faixas_etarias))]
-        plt.plot(faixas_etarias, m_vals, marker='o', linestyle=estilos_m[i],
-                 color=cores_m[i], linewidth=2, markersize=6, label=f'Masculino {ano}')
-        plt.plot(faixas_etarias, f_vals, marker='s', linestyle=estilos_f[i],
-                 color=cores_f[i], linewidth=2, markersize=6, label=f'Feminino {ano}')
-    plt.xlabel('Faixa Etária')
-    plt.ylabel('Percentual de Pesquisadores (%)')
-    plt.title('Distribuição Etária de Pesquisadores por Sexo (2000, 2010, 2025)')
-    plt.legend(loc='upper right')
+
+        # Intensidade da cor cresce com o ano
+        color_m = cmap_m(0.3 + i / len(anos_idade) * 0.6)
+        color_f = cmap_f(0.3 + i / len(anos_idade) * 0.6)
+
+        plt.plot(faixas_etarias, m_vals, marker='o', linestyle='-',
+                 color=color_m, linewidth=1.5, markersize=4,
+                 label=f'Masculino {ano}')
+        plt.plot(faixas_etarias, f_vals, marker='s', linestyle='-',
+                 color=color_f, linewidth=1.5, markersize=4,
+                 label=f'Feminino {ano}')
+
+    plt.xlabel('Faixa Etária', fontsize=12)
+    plt.ylabel('Percentual de Pesquisadores (%)', fontsize=12)
+    plt.title('Distribuição Etária de Pesquisadores por Sexo (2000–2025)', fontsize=14)
+    # Legenda colocada à direita para não ocupar espaço do gráfico
+    plt.legend(loc='upper left', bbox_to_anchor=(1.02, 1), fontsize=8)
     plt.grid(True, linestyle=':', alpha=0.7)
     plt.xticks(rotation=45)
     plt.tight_layout()
-    plt.savefig('curvas_etarias.png', dpi=300)
+    plt.savefig('curvas_etarias.png', dpi=300, bbox_inches='tight')
     plt.close()
 
 def plot_piramide_etaria(ano=2025):
