@@ -28,42 +28,40 @@
 # SAÍDAS:
 #   - Três tabelas exibidas no console (distribuição etária, evolução da
 #     participação feminina, proporção de líderes por sexo);
-#   - Dez gráficos salvos como arquivos PNG de alta resolução (300 dpi):
-#       1. curvas_etarias.png
-#       2. piramide_etaria_2025.png
-#       3. stacked_bars.png
-#       4. area_etaria.png
-#       5. lideranca_dual.png
-#       6. lideranca_proporcao.png
-#       7. lideranca_absoluto.png
-#       8. heatmap_feminino.png
-#       9. scatter_presenca_poder.png
-#      10. hiato_lideranca.png
+#   - Dez gráficos salvos como arquivos PNG de alta resolução (300 dpi);
+#   - Um arquivo Excel (tabelas_artigo.xlsx) com todas as tabelas.
 #
 # DEPENDÊNCIAS:
 #   Python 3.x com as bibliotecas:
 #     - matplotlib
 #     - numpy
-#     - pandas (opcional, usada apenas para impressão das tabelas)
+#     - pandas
+#     - openpyxl (para exportar para Excel)
 #
 # COMO EXECUTAR:
 #   $ python Graficos_e_tabelas.py
 #   Os gráficos serão salvos no mesmo diretório do script.
 #
 # ============================================================================
+# ============================================================================
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import openpyxl
+import openpyxl
 
 # ============================================================================
-# 1. DADOS (mesmos do artigo)
+# 1. DADOS
 # ============================================================================
 
 # --- Dados etários ---
 anos_idade = [2000, 2002, 2004, 2006, 2008, 2010, 2014, 2016, 2023, 2025]
-faixas = ['-19', '20-24', '25-29', '30-34', '35-39', '40-44', '45-49', '50-54', '55-59', '60-64', '65+']
 
+# Faixas etárias (exclui "Não informado")
+faixas_etarias = ['-19', '20-24', '25-29', '30-34', '35-39', '40-44', '45-49', '50-54', '55-59', '60-64', '65+']
+
+# Percentuais masculinos (apenas faixas etárias)
 masc_perc = [
     [0.14, 0.00, 0.01, 0.00, 0.00, 0.00, 0.01, 0.01, 0.01, 0.00],
     [0.20, 0.22, 0.30, 0.30, 0.30, 0.31, 0.30, 0.23, 0.21, 0.20],
@@ -78,6 +76,7 @@ masc_perc = [
     [1.43, 1.60, 1.89, 2.07, 2.28, 2.40, 2.94, 3.22, 3.90, 4.27]
 ]
 
+# Percentuais femininos (apenas faixas etárias)
 fem_perc = [
     [0.07, 0.00, 0.00, 0.00, 0.00, 0.01, 0.01, 0.01, 0.01, 0.01],
     [0.27, 0.28, 0.39, 0.39, 0.44, 0.41, 0.44, 0.37, 0.37, 0.36],
@@ -91,6 +90,13 @@ fem_perc = [
     [1.15, 1.47, 1.72, 1.99, 2.32, 2.49, 2.71, 2.83, 3.42, 3.82],
     [0.64, 0.73, 0.95, 1.13, 1.36, 1.56, 2.08, 2.38, 3.52, 3.90]
 ]
+
+# Linha "Não informado" para cada sexo (valores extraídos da tabela original)
+masc_ni = [1.60, 0.02, 0.01, 0.00, 0.00, 0.01, 0.00, 0.00, 0.00, 0.00]
+fem_ni  = [0.86, 0.01, 0.01, 0.00, 0.00, 0.00, 0.02, 0.01, 0.00, 0.00]
+
+# Categorias completas para a tabela
+categorias = faixas_etarias + ['Não informado']
 
 # --- Dados de liderança ---
 anos_lead = [2000, 2002, 2004, 2006, 2008, 2010, 2014, 2016, 2023, 2025]
@@ -116,24 +122,39 @@ pct_f_total = [tf / tg * 100 for tf, tg in zip(total_f, total_geral)]
 pct_f_lider = [lf / tl * 100 for lf, tl in zip(lideres_f, total_lideres)]
 
 # ============================================================================
-# 2. TABELAS (impressão no console)
+# 2. TABELAS (impressão no console e exportação para Excel)
 # ============================================================================
-print("\n" + "="*80)
-print("TABELA 1 – Distribuição percentual por sexo e faixa etária (2000, 2010, 2025)")
-print("="*80)
-idx_2000 = anos_idade.index(2000)
-idx_2010 = anos_idade.index(2010)
-idx_2025 = anos_idade.index(2025)
-data_tab1 = {'Faixa etária': faixas}
-for ano, idx in [('2000', idx_2000), ('2010', idx_2010), ('2025', idx_2025)]:
-    data_tab1[f'Masculino {ano}'] = [round(masc_perc[i][idx], 2) for i in range(len(faixas))]
-    data_tab1[f'Feminino {ano}'] = [round(fem_perc[i][idx], 2) for i in range(len(faixas))]
-df_tab1 = pd.DataFrame(data_tab1)
-print(df_tab1.to_string(index=False))
 
+# --- TABELA 1: Distribuição percentual completa por sexo e faixa etária ---
+print("\n" + "="*100)
+print("TABELA 1 – Distribuição percentual de pesquisadores por sexo e faixa etária (2000–2025)")
+print("="*100)
+
+# Masculino
+data_m = {'Categoria': categorias}
+for i, ano in enumerate(anos_idade):
+    col_m = [round(masc_perc[j][i], 2) for j in range(len(faixas_etarias))]
+    col_m.append(round(masc_ni[i], 2))
+    data_m[f'{ano}'] = col_m
+df_m = pd.DataFrame(data_m)
+print("\n--- MASCULINO ---")
+print(df_m.to_string(index=False))
+
+# Feminino
+data_f = {'Categoria': categorias}
+for i, ano in enumerate(anos_idade):
+    col_f = [round(fem_perc[j][i], 2) for j in range(len(faixas_etarias))]
+    col_f.append(round(fem_ni[i], 2))
+    data_f[f'{ano}'] = col_f
+df_f = pd.DataFrame(data_f)
+print("\n--- FEMININO ---")
+print(df_f.to_string(index=False))
+
+# --- TABELA 2: Evolução da participação feminina ---
 print("\n" + "="*80)
-print("TABELA 2 – Evolução da participação feminina no total e na liderança (2000–2025)")
+print("TABELA 2 – Evolução da participação feminina no total de pesquisadores e na liderança (2000–2025)")
 print("="*80)
+
 tab2_data = []
 for i, ano in enumerate(anos_lead):
     tab2_data.append([ano, total_f[i], total_geral[i], round(pct_f_total[i], 1),
@@ -144,9 +165,11 @@ df_tab2 = pd.DataFrame(tab2_data, columns=['Ano', 'Total mulheres', 'Total geral
                                            'Total líderes', '% mulheres líderes', 'Diferença (pp)'])
 print(df_tab2.to_string(index=False))
 
+# --- TABELA 3: Proporção de líderes por sexo ---
 print("\n" + "="*80)
 print("TABELA 3 – Proporção de líderes por sexo (2000–2025)")
 print("="*80)
+
 tab3_data = []
 for i, ano in enumerate(anos_lead):
     pct_m = lideres_m[i] / total_m[i] * 100
@@ -155,8 +178,17 @@ for i, ano in enumerate(anos_lead):
 df_tab3 = pd.DataFrame(tab3_data, columns=['Ano', '% Líderes homens', '% Líderes mulheres', 'Diferença (p.p.)'])
 print(df_tab3.to_string(index=False))
 
+# --- Exportar todas as tabelas para um arquivo Excel ---
+with pd.ExcelWriter('tabelas_artigo.xlsx', engine='openpyxl') as writer:
+    df_m.to_excel(writer, sheet_name='Distribuição_Etaria_Masculino', index=False)
+    df_f.to_excel(writer, sheet_name='Distribuição_Etaria_Feminino', index=False)
+    df_tab2.to_excel(writer, sheet_name='Participacao_Feminina_Lideranca', index=False)
+    df_tab3.to_excel(writer, sheet_name='Proporcao_Lideres', index=False)
+
+print("\nTabelas exportadas para 'tabelas_artigo.xlsx'.")
+
 # ============================================================================
-# 3. FUNÇÕES PARA GERAR TODOS OS GRÁFICOS
+# 3. FUNÇÕES PARA GERAR OS GRÁFICOS
 # ============================================================================
 
 def plot_curvas_etarias():
@@ -169,11 +201,11 @@ def plot_curvas_etarias():
     estilos_f = ['-', '--', ':']
     for i, ano in enumerate(anos_plot):
         idx = anos_idade.index(ano)
-        m_vals = [masc_perc[j][idx] for j in range(len(faixas))]
-        f_vals = [fem_perc[j][idx] for j in range(len(faixas))]
-        plt.plot(faixas, m_vals, marker='o', linestyle=estilos_m[i],
+        m_vals = [masc_perc[j][idx] for j in range(len(faixas_etarias))]
+        f_vals = [fem_perc[j][idx] for j in range(len(faixas_etarias))]
+        plt.plot(faixas_etarias, m_vals, marker='o', linestyle=estilos_m[i],
                  color=cores_m[i], linewidth=2, markersize=6, label=f'Masculino {ano}')
-        plt.plot(faixas, f_vals, marker='s', linestyle=estilos_f[i],
+        plt.plot(faixas_etarias, f_vals, marker='s', linestyle=estilos_f[i],
                  color=cores_f[i], linewidth=2, markersize=6, label=f'Feminino {ano}')
     plt.xlabel('Faixa Etária')
     plt.ylabel('Percentual de Pesquisadores (%)')
@@ -188,11 +220,11 @@ def plot_curvas_etarias():
 def plot_piramide_etaria(ano=2025):
     """Pirâmide populacional para um ano específico."""
     idx = anos_idade.index(ano)
-    m_vals = [masc_perc[i][idx] for i in range(len(faixas))]
-    f_vals = [fem_perc[i][idx] for i in range(len(faixas))]
+    m_vals = [masc_perc[i][idx] for i in range(len(faixas_etarias))]
+    f_vals = [fem_perc[i][idx] for i in range(len(faixas_etarias))]
     fig, ax = plt.subplots(figsize=(10, 8))
-    ax.barh(faixas, [-m for m in m_vals], color='#1f77b4', label='Masculino')
-    ax.barh(faixas, f_vals, color='#d62728', label='Feminino')
+    ax.barh(faixas_etarias, [-m for m in m_vals], color='#1f77b4', label='Masculino')
+    ax.barh(faixas_etarias, f_vals, color='#d62728', label='Feminino')
     ax.axvline(0, color='black', linewidth=0.8)
     ax.set_xlabel('Percentual de pesquisadores (%)')
     ax.set_title(f'Pirâmide etária dos pesquisadores brasileiros ({ano})')
@@ -207,10 +239,10 @@ def plot_stacked_bars():
     fig, axes = plt.subplots(1, 3, figsize=(15, 6), sharey=True)
     for ax, ano in zip(axes, anos_plot):
         idx = anos_idade.index(ano)
-        m_vals = [masc_perc[i][idx] for i in range(len(faixas))]
-        f_vals = [fem_perc[i][idx] for i in range(len(faixas))]
-        ax.bar(faixas, m_vals, color='#1f77b4', label='Masculino')
-        ax.bar(faixas, f_vals, bottom=m_vals, color='#d62728', label='Feminino')
+        m_vals = [masc_perc[i][idx] for i in range(len(faixas_etarias))]
+        f_vals = [fem_perc[i][idx] for i in range(len(faixas_etarias))]
+        ax.bar(faixas_etarias, m_vals, color='#1f77b4', label='Masculino')
+        ax.bar(faixas_etarias, f_vals, bottom=m_vals, color='#d62728', label='Feminino')
         ax.set_title(ano)
         ax.set_ylabel('Percentual (%)')
         ax.legend()
@@ -225,20 +257,19 @@ def plot_area_etaria():
     fig, axes = plt.subplots(1, 2, figsize=(14, 5), sharey=True)
     
     # Construir listas de séries: cada série é uma faixa etária com valores ao longo dos anos
-    # Para masculino: temos 11 faixas, cada uma com 10 valores (um por ano)
-    masc_series = [ [masc_perc[i][j] for j in range(len(anos_idade))] for i in range(len(faixas)) ]
-    fem_series  = [ [fem_perc[i][j] for j in range(len(anos_idade))] for i in range(len(faixas)) ]
+    masc_series = [ [masc_perc[i][j] for j in range(len(anos_idade))] for i in range(len(faixas_etarias)) ]
+    fem_series  = [ [fem_perc[i][j] for j in range(len(anos_idade))] for i in range(len(faixas_etarias)) ]
     
     # Cores para as áreas
-    cores_masc = plt.cm.Blues(np.linspace(0.4, 0.9, len(faixas)))
-    cores_fem  = plt.cm.Reds(np.linspace(0.4, 0.9, len(faixas)))
+    cores_masc = plt.cm.Blues(np.linspace(0.4, 0.9, len(faixas_etarias)))
+    cores_fem  = plt.cm.Reds(np.linspace(0.4, 0.9, len(faixas_etarias)))
     
-    axes[0].stackplot(anos_idade, *masc_series, labels=faixas, alpha=0.7, colors=cores_masc)
+    axes[0].stackplot(anos_idade, *masc_series, labels=faixas_etarias, alpha=0.7, colors=cores_masc)
     axes[0].set_title('Masculino')
     axes[0].set_ylabel('Percentual de pesquisadores (%)')
     axes[0].legend(loc='upper left', fontsize=8)
     
-    axes[1].stackplot(anos_idade, *fem_series, labels=faixas, alpha=0.7, colors=cores_fem)
+    axes[1].stackplot(anos_idade, *fem_series, labels=faixas_etarias, alpha=0.7, colors=cores_fem)
     axes[1].set_title('Feminino')
     axes[1].legend(loc='upper left', fontsize=8)
     
@@ -307,8 +338,8 @@ def plot_lideranca_absoluto():
 def plot_heatmap():
     """Heatmap da participação feminina por faixa etária e ano."""
     # Matriz: linhas = faixas, colunas = anos
-    fem_share = np.zeros((len(faixas), len(anos_idade)))
-    for i, faixa in enumerate(faixas):
+    fem_share = np.zeros((len(faixas_etarias), len(anos_idade)))
+    for i, faixa in enumerate(faixas_etarias):
         for j, ano in enumerate(anos_idade):
             total = masc_perc[i][j] + fem_perc[i][j]
             fem_share[i, j] = (fem_perc[i][j] / total * 100) if total > 0 else 0
@@ -316,8 +347,8 @@ def plot_heatmap():
     im = ax.imshow(fem_share, cmap='RdBu_r', aspect='auto', vmin=0, vmax=100)
     ax.set_xticks(range(len(anos_idade)))
     ax.set_xticklabels(anos_idade, rotation=45)
-    ax.set_yticks(range(len(faixas)))
-    ax.set_yticklabels(faixas)
+    ax.set_yticks(range(len(faixas_etarias)))
+    ax.set_yticklabels(faixas_etarias)
     ax.set_xlabel('Ano')
     ax.set_ylabel('Faixa etária')
     ax.set_title('Participação feminina por faixa etária e ano (%)')
