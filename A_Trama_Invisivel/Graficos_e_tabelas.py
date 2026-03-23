@@ -1,3 +1,57 @@
+# ============================================================================
+# Análise da Distribuição de Gênero nos Grupos de Pesquisa do Brasil
+# ============================================================================
+# – adaptado para o artigo.
+# OBJETIVO:
+#   Gerar tabelas e gráficos para o artigo científico "A Trama Invisível:
+#   Gênero, Tempo e Liderança na Tapeçaria da Ciência Brasileira".
+#   O código processa os dados do Diretório dos Grupos de Pesquisa do CNPq
+#   (2000-2025) e produz visualizações que evidenciam:
+#     - A evolução da distribuição etária e de gênero;
+#     - A assimetria na ocupação de lideranças;
+#     - A relação entre presença feminina na base e no poder.
+#
+# DESENVOLVIDO POR:
+#   Conselho Nacional de Desenvolvimento Científico e Tecnológico (CNPq).
+#   Diretoria de Análise de Resultados e Soluções Digitais (DASD) 
+#   Coordenação-Geral de Apoio e de Análise dos Resultados do Fomento (CGARF) 
+#   Coordenação de Apoio ao Monitoramento e Análise de Resultados (COMAR)
+#   Equipe COMAR.
+#   Data: março de 2026.
+#
+# DADOS UTILIZADOS:
+#   Tabelas originais extraídas do Diretório dos Grupos de Pesquisa do CNPq:
+#     - "pesquisadores por sexo e faixa etaria.png"
+#     - "por liderança e sexo 3.png"
+#   Os valores foram digitados manualmente com base nos arquivos fornecidos.
+#
+# SAÍDAS:
+#   - Três tabelas exibidas no console (distribuição etária, evolução da
+#     participação feminina, proporção de líderes por sexo);
+#   - Dez gráficos salvos como arquivos PNG de alta resolução (300 dpi):
+#       1. curvas_etarias.png
+#       2. piramide_etaria_2025.png
+#       3. stacked_bars.png
+#       4. area_etaria.png
+#       5. lideranca_dual.png
+#       6. lideranca_proporcao.png
+#       7. lideranca_absoluto.png
+#       8. heatmap_feminino.png
+#       9. scatter_presenca_poder.png
+#      10. hiato_lideranca.png
+#
+# DEPENDÊNCIAS:
+#   Python 3.x com as bibliotecas:
+#     - matplotlib
+#     - numpy
+#     - pandas (opcional, usada apenas para impressão das tabelas)
+#
+# COMO EXECUTAR:
+#   $ python Graficos_e_tabelas.py
+#   Os gráficos serão salvos no mesmo diretório do script.
+#
+# ============================================================================
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
